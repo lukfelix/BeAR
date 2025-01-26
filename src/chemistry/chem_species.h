@@ -27,7 +27,7 @@
 
 namespace bear{
 
-enum chemical_species_id {_TOTAL, _H, _He, _C, _O, _Fe, _Fep, _Ca, _Ti, _Tip, _H2, _H2O, _CO2, _CO, _CH4, _HCN, _NH3, _C2H2, _N2, _Na, _K, _H2S, _Hm, _TiO, _VO, _FeH, _SH, _MgO, _AlO, _CaO, _CrH, _MgH, _CaH, _TiH, _OH, _e, _V, _Vp, _Mn, _Si, _Cr, _Crp, _SiO, _SiO2, _SO2};
+enum chemical_species_id {_TOTAL, _H, _He, _C, _O, _Fe, _Fep, _Ca, _Ti, _Tip, _H2, _H2O, _CO2, _CO, _CH4, _HCN, _NH3, _C2H2, _N2, _Na, _K, _H2S, _Hm, _TiO, _VO, _FeH, _SH, _MgO, _AlO, _CaO, _CrH, _MgH, _CaH, _TiH, _OH, _e, _V, _Vp, _Mn, _Si, _Cr, _Crp, _SiO, _SiO2, _SO2, _CS2, _OCS, _C2H4, _NO2, _N2O, _CH3Cl, _O3, _HCl, _PH3};
 
 
 struct chemistry_data{
@@ -85,7 +85,16 @@ const std::vector<chemistry_data> species_data{ {_TOTAL, "Total", "Total",  0.0}
                                                 {_Crp,   "Cr+",   "Cr1+",   51.996},
                                                 {_SiO,   "SiO",   "O1Si1",  44.08},
                                                 {_SiO2,  "SiO2",  "O2Si1",  60.08},
-                                                {_SO2,   "SO2",   "O2S1",   64.066}
+                                                {_SO2,   "SO2",   "O2S1",   64.066},
+                                                {_CS2,   "CS2",   "C1S2",   76.139},
+                                                {_OCS,   "OCS",   "C1O1S1", 60.075},
+                                                {_C2H4,  "C2H4",  "C2H4",   28.054},
+                                                {_NO2,   "NO2",   "N1O2",   46.0055},
+                                                {_N2O,   "N2O",   "N2O1",   44.013},
+                                                {_CH3Cl, "CH3Cl", "C1H3Cl1",50.49},
+                                                {_O3,    "O3",    "O3",     47.998},
+                                                {_HCl,   "HCl",   "H1Cl1",  36.46},
+                                                {_PH3,   "PH3",   "H3P1",   33.99758},
                                               };
 }
 }
