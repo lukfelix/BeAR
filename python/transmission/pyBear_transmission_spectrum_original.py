@@ -12,7 +12,6 @@ wavelength_max = 10.0
 resolution = 1000.0
 
 cross_section_file_path = "/work2/lbuc/lukas/opacities/"
-wavenumber_path = '/work2/lbuc/lukas/opacities/wavenumber_full.dat'
 
 opacity_species_data = np.array([
   ['CIA-H2-H2', 'CIA/H2-H2'], 
@@ -39,8 +38,7 @@ transmission_model = BeARTransmissionModel(
   wavelength_max,
   resolution,
   cross_section_file_path, 
-  opacity_species_data,
-  wavenumber_path)
+  opacity_species_data)
 
 
 #define the planet/atmosphere parameters
@@ -112,17 +110,13 @@ spectrum3 = transmission_model.calcSpectrum(
   mixing_ratios,
   cloud_optical_depth)
 
+print(transmission_model.wavelengths)
+print(spectrum)
 
 fig, ax = plt.subplots()
 ax.plot(transmission_model.wavelengths, spectrum)
 ax.plot(transmission_model.wavelengths, spectrum2)
 ax.plot(transmission_model.wavelengths, spectrum3)
-
-print(transmission_model.wavelengths)
-print(spectrum)
-
 plt.xlabel("Wavelength ($\mu$m)")
 plt.ylabel("Transit depth (ppm)")
-plt.savefig("/work2/lbuc/lukas/Projects/CC_JWST/figures/retrieval_test_spectrum.png", dpi=300)
-plt.clf()
-
+plt.show()

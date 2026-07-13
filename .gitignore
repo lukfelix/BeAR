@@ -1,11 +1,15 @@
 #the executable
 bear
+bear_old
 
 # build files from cmake
 build/*
-build_test/*
+build_old/*
 CMakeFiles/*
 .vscode/
+
+# python
+pybear.cpython*
 
 _deps/*
 
@@ -38,3 +42,6 @@ WASP-77Ab_comb/*
 WASP-121b_em_test/*
 WASP-121b_JWST/*
 WASP-121b_comb/*
+
+# ignore backup files
+*.bak*

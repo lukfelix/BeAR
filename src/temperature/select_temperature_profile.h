@@ -37,8 +37,9 @@
 #include "cubic_b_spline_temperature.h"
 #include "pchip_temperature.h"
 #include "guillot_temperature.h"
-#include "adiabate_cubic_spline.h"
 #include "madhusudhan_seager_temperature.h"
+#include "adiabate_cubic_spline.h"
+#include "twolayer_temperature.h"
 
 
 namespace bear {
@@ -46,8 +47,8 @@ namespace bear {
 //definition of the different chemistry modules with an
 //identifier, a keyword to be located in the config file and a short version of the keyword
 namespace temp_profile_modules{
-  enum id {poly, milne, constant, cubicbspline, guillot, adspline, madhusudhan_seager, pchip};
-  const std::vector<std::string> description {"poly", "milne", "const", "cubicbspline", "guillot", "adiabate_spline", "madhusudhan_seager", "pchip"};
+  enum id {poly, milne, constant, cubicbspline, guillot, adspline, madhusudhan_seager, pchip, twotemp};
+  const std::vector<std::string> description {"poly", "milne", "const", "cubicbspline", "guillot", "adiabate_spline", "madhusudhan_seager", "pchip", "two_temp"};
 }
 
 
@@ -136,6 +137,9 @@ inline std::unique_ptr<Temperature> selectTemperatureProfile(
         throw InvalidInput(std::string ("forward_model.config"), error_message);
       }
       return std::make_unique<PchipTemperature>(std::stoi(parameters[0]));
+
+    case temp_profile_modules::twotemp :
+      return std::make_unique<TwoLayerTemperature>();
   }
 
 

@@ -41,7 +41,7 @@ set(CMAKE_BUILD_TYPE Release)
 
 
 if(SM MATCHES "0")
-  set(CUDA_ARCH_FLAGS "-arch=sm_75")
+  set(CUDA_ARCH_FLAGS "-arch=sm_70")
 else()
   message(STATUS "CUDA Architecture manually set to: -arch=sm_${SM}")
   set(CUDA_ARCH_FLAGS "-arch=sm_${SM}")
@@ -161,7 +161,10 @@ set(SRC
   src/temperature/guillot_temperature.cpp
   src/temperature/adiabate_cubic_spline.cpp
   src/temperature/madhusudhan_seager_temperature.cpp
-)
+  src/temperature/twolayer_temperature.cpp
+  src/radiative_transfer/cdisort_src/cdisort.c
+  src/radiative_transfer/cdisort_src/locate.c)
+  
 
 set(SRC_CUDA
   src/CUDA_kernels/band_integration_kernels.cu

@@ -106,3 +106,20 @@ class BeARTransmissionModel:
     spectrum = np.flip(spectrum)
 
     return spectrum
+  
+  # def convolve_spectrum(self, spectrum, FWHM_vals):
+  #   """Convolve the input spectrum with a Gaussian kernel of given FWHM values. Cut off the convolution at 5 sigma."""
+  #   convolved_spectrum = np.zeros_like(spectrum)
+  #   for i in range(len(spectrum)):
+  #       FWHM = FWHM_vals[i]
+  #       sigma = FWHM / (2 * np.sqrt(2 * np.log(2)))
+  #       if i<len(spectrum)-1:
+  #         kernel_size = int(5 * sigma / (self.wavelengths[i+1] - self.wavelengths[i]))  # cut off at 5 sigma
+  #         kernel_x = np.arange(-kernel_size, kernel_size + 1) * (self.wavelengths[i+1] - self.wavelengths[i])
+  #       else: # need to approximate last point's FWHM using the previous point, otherwise kernel size is not defined at all, should be fine though
+  #         kernel_size = int(5 * sigma / (self.wavelengths[i] - self.wavelengths[i-1]))  # cut off at 5 sigma
+  #         kernel_x = np.arange(-kernel_size, kernel_size + 1) * (self.wavelengths[i] - self.wavelengths[i-1])
+  #       kernel = np.exp(-0.5 * (kernel_x / sigma) ** 2)
+  #       kernel /= np.sum(kernel)  # normalize the kernel
+  #       convolved_spectrum[i] = np.sum(spectrum[max(0, i - kernel_size):min(len(spectrum), i + kernel_size + 1)] * kernel[max(0, kernel_size - i):min(2 * kernel_size + 1, kernel_size + len(spectrum) - i)])
+  #   return convolved_spectrum

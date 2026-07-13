@@ -9,7 +9,8 @@ from lib import bear
 
 
 #setting the basic properties of the model
-retrieval_folder = "TransmissionExample/"
+# retrieval_folder = "TransmissionExample/"
+retrieval_folder = "/work2/lbuc/lukas/Projects/BeAR_Introduction/TOI-270_fullres_rerun_test"
 
 #load the retrieval configuration file
 model_config = bear.Config(retrieval_folder)
