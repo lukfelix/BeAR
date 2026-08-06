@@ -46,20 +46,27 @@ void CrossSectionFile::loadFile()
   file.seekg(0, std::ios::beg);
 
   
+  //read the entire file in one go, rather than one float at a time
+  std::vector<float> buffer(nb_data_points);
+
+  file.read((char *) buffer.data(), nb_data_points * sizeof(float));
+
+  if (file.gcount() != static_cast<std::streamsize>(nb_data_points * sizeof(float)))
+  {
+    std::cout << "cross section file " << filename << " could not be fully read! :(((( \n";
+
+    assert (false);
+  }
+
+
   cross_sections.resize(nb_data_points);
 
-
   for (int i=0; i<nb_data_points; ++i)
-  {
-    float x;
+    cross_sections[i] = buffer[i];
 
-    file.read((char *) &x, sizeof x);
-
-    cross_sections[i] = x;
-    
-    if (is_data_log) 
+  if (is_data_log)
+    for (int i=0; i<nb_data_points; ++i)
       cross_sections[i] = std::pow(10.0, cross_sections[i]);
-  }
 
 
   file.close();
