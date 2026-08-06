@@ -30,7 +30,7 @@ def setup_retrieval_model(use_gpu=True, grid_points_number=60):
     spectral_discretisation = 'const_resolution'
     wavelength_min = 0.4
     wavelength_max = 6.0
-    resolution = 2000.0
+    resolution = 10000.0
 
     cross_section_file_path = cross_section_path
     wavenumber_path = '/work2/lbuc/lukas/opacities/wavenumber_full.dat'
@@ -158,25 +158,26 @@ def retrieval_forward_model(x, model, grid_points_number, chem_species, FWHM_val
 
     # skip unphysical models
     if total_metals >= 1.0:
-        return np.zeros(model.wavelengths.size)
+        return model.wavelengths, np.zeros(model.wavelengths.size)
     
     H2He_ratio = 0.83/0.13
     mix_ratios[:, 0] = (1.0 - total_metals) * H2He_ratio / (1.0 + H2He_ratio)
     mix_ratios[:, 1] = (1.0 - total_metals) / (1.0 + H2He_ratio)
     mix_ratios[:, 2:] = 10**x[3:10]
 
-    print(mix_ratios[0,:], np.sum(mix_ratios[0,:]))
+    # print(mix_ratios[0,:], np.sum(mix_ratios[0,:]))
     #cloud properties, set to zero for now
     cloud_optical_depth = np.zeros((grid_points_number-1, model.wavelengths.size))
 
-    print(f"Evaluating model with surface gravity={surface_gravity:.2e} cm/s^2, \n\
-            planet radius={planet_radius:.2e} cm, \n\
-            radius ratio={radius_ratio:.4f}, \n\
-            temperature={temperature[0]:.1f} K, \n\
-            total metals={total_metals:.2e}, \n\
-            RV shift={x[13]:.1f} km/s\n\
-            pressure range={pressure.min():.2e} - {pressure.max():.2e} bar\n\
-            cloud optical depth range={cloud_optical_depth.min():.2e} - {cloud_optical_depth.max():.2e}")
+    # print(f"Evaluating model with surface gravity={surface_gravity:.2e} cm/s^2, \n\
+    #         planet radius={planet_radius:.2e} cm, \n\
+    #         radius ratio={radius_ratio:.4f}, \n\
+    #         temperature={temperature[0]:.1f} K, \n\
+    #         total metals={total_metals:.2e}, \n\
+    #         RV shift={x[13]:.1f} km/s\n\
+    #         pressure range={pressure.min():.2e} - {pressure.max():.2e} bar\n\
+    #         cloud optical depth range={cloud_optical_depth.min():.2e} - {cloud_optical_depth.max():.2e}")
+
     spectrum = model.calcSpectrum(
         surface_gravity, 
         planet_radius, 
@@ -188,8 +189,8 @@ def retrieval_forward_model(x, model, grid_points_number, chem_species, FWHM_val
         cloud_optical_depth,
         use_variable_gravity=False)
     
-    print('Model evaluated with parameters:', x)
-    print(np.nanmean(spectrum), np.nanmin(spectrum), np.nanmax(spectrum))
+    # print('Model evaluated with parameters:', x)
+    # print(np.nanmean(spectrum), np.nanmin(spectrum), np.nanmax(spectrum))
     
     shifted_wavelengths = RV_shift_model(model.wavelengths, x[13])
     
@@ -197,6 +198,13 @@ def retrieval_forward_model(x, model, grid_points_number, chem_species, FWHM_val
     # if FWHM_vals is not None:
     #     interp_FWHM_vals = np.interp(model.wavelengths, FWHM_vals[:, 0], FWHM_vals[:, 1])
     #     spectrum = model.convolve_spectrum(spectrum, interp_FWHM_vals)
+
+    # print('Shape of spectrum:', spectrum.shape)
+    # print('Shape of shifted_wavelengths:', shifted_wavelengths.shape)
+
+    if spectrum.shape != shifted_wavelengths.shape:
+        # fix if spectrum does not get returned for whatever reason
+        return shifted_wavelengths, np.zeros(model.wavelengths.size)
 
     return shifted_wavelengths, spectrum
 
@@ -282,8 +290,8 @@ if __name__ == "__main__":
 
     transmission_model, chem_species, grid_points_number = setup_retrieval_model()
     
-    niriss = np.loadtxt('/work2/lbuc/lukas/data/TOI-270/fullres_NIRISS_quadratic_ExoCTK_5x.dat', skiprows=11)
-    wls_niriss, depths_niriss, errs_niriss, FWHM_niriss = niriss[:,0], niriss[:,1], niriss[:,2], niriss[:, 3]
+    # niriss = np.loadtxt('/work2/lbuc/lukas/data/TOI-270/fullres_NIRISS_quadratic_ExoCTK_5x.dat', skiprows=11)
+    # wls_niriss, depths_niriss, errs_niriss, FWHM_niriss = niriss[:,0], niriss[:,1], niriss[:,2], niriss[:, 3]
     # niriss = np.loadtxt('/work2/lbuc/lukas/data/TOI-270/fullres_NIRISS2......dat', skiprows=11)
     nrs1 = np.loadtxt('/work2/lbuc/lukas/data/TOI-270/fullres_NRS1_quadratic_ExoCTK_5x-wide_flat_d.dat', skiprows=11)
     wls_nrs1, depths_nrs1, errs_nrs1, FWHM_nrs1 = nrs1[:,0], nrs1[:,1], nrs1[:,2], nrs1[:, 3]
@@ -319,8 +327,8 @@ if __name__ == "__main__":
             return -np.inf
         
         # Residuals
-        model_convolved_niriss = convolve_spectrum(wls, model, wls_niriss, FWHM_niriss)
-        y_niriss = bin_to_data(wls, model_convolved_niriss, wls_niriss) + theta[11]  # add NIRISS offset
+        # model_convolved_niriss = convolve_spectrum(wls, model, wls_niriss, FWHM_niriss)
+        # y_niriss = bin_to_data(wls, model_convolved_niriss, wls_niriss) + theta[11]  # add NIRISS offset
 
         model_convolved_nrs1 = convolve_spectrum(wls, model, wls_nrs1, FWHM_nrs1)
         y_nrs1 = bin_to_data(wls, model_convolved_nrs1, wls_nrs1)  # no NRS1 offset
@@ -328,13 +336,13 @@ if __name__ == "__main__":
         model_convolved_nrs2 = convolve_spectrum(wls, model, wls_nrs2, FWHM_nrs2)
         y_nrs2 = bin_to_data(wls, model_convolved_nrs2, wls_nrs2) + theta[12]  # add NRS2 offset
 
-        residual_niriss = depths_niriss - y_niriss
+        # residual_niriss = depths_niriss - y_niriss
         residual_nrs1 = depths_nrs1 - y_nrs1
         residual_nrs2 = depths_nrs2 - y_nrs2
 
         # Log-likelihood (constant log(2*pi) term often dropped, but included here for correctness)
-        loglike = -0.5 * np.sum((residual_niriss / errs_niriss) ** 2 + np.log(2 * np.pi * errs_niriss**2)) + \
-                  -0.5 * np.sum((residual_nrs1 / errs_nrs1) ** 2 + np.log(2 * np.pi * errs_nrs1**2)) + \
+        #loglike = -0.5 * np.sum((residual_niriss / errs_niriss) ** 2 + np.log(2 * np.pi * errs_niriss**2)) + \
+        loglike = -0.5 * np.sum((residual_nrs1 / errs_nrs1) ** 2 + np.log(2 * np.pi * errs_nrs1**2)) + \
                   -0.5 * np.sum((residual_nrs2 / errs_nrs2) ** 2 + np.log(2 * np.pi * errs_nrs2**2))
 
         return loglike
@@ -355,15 +363,15 @@ if __name__ == "__main__":
     """
 
         # Evaluate model at each data point
-        print("Evaluating forward model with parameters:")
-        print(theta)
+        # print("Evaluating forward model with parameters:")
+        # print(theta)
         wls, model = retrieval_forward_model(theta, transmission_model, grid_points_number, chem_species)
         
         # Residuals
-        print("Calculating model for each instrument with convolution and binning...")
-        model_convolved_niriss = convolve_spectrum(wls, model, wls_niriss, FWHM_niriss)
+        # print("Calculating model for each instrument with convolution and binning...")
+        # model_convolved_niriss = convolve_spectrum(wls, model, wls_niriss, FWHM_niriss)
         # model_convolved_niriss = model
-        y_niriss = bin_to_data(wls, model_convolved_niriss, wls_niriss) + theta[11]  # add NIRISS offset
+        # y_niriss = bin_to_data(wls, model_convolved_niriss, wls_niriss) + theta[11]  # add NIRISS offset
 
         model_convolved_nrs1 = convolve_spectrum(wls, model, wls_nrs1, FWHM_nrs1)
         # model_convolved_nrs1 = model
@@ -373,39 +381,41 @@ if __name__ == "__main__":
         # model_convolved_nrs2 = model
         y_nrs2 = bin_to_data(wls, model_convolved_nrs2, wls_nrs2) + theta[12]  # add NRS2 offset
 
-        print("Done. Average model values:")
-        print(np.nanmean(y_niriss), np.nanmean(y_nrs1), np.nanmean(y_nrs2))
-        return y_niriss, y_nrs1, y_nrs2
+        # print("Done. Average model values:")
+        # print(np.nanmean(y_niriss), np.nanmean(y_nrs1), np.nanmean(y_nrs2))
+        # return y_niriss, y_nrs1, y_nrs2
+        return y_nrs1, y_nrs2
     
-    plt.figure(figsize=(10, 6))
-    test_theta = np.array([3.0126, 2.15, 0.378, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, 450.0, 20.0, 0.0, 0.0])  # example parameters for testing
+    # plt.figure(figsize=(10, 6))
+    # test_theta = np.array([3.0126, 2.15, 0.378, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, 450.0, 20.0, 0.0, 0.0])  # example parameters for testing
     # y_niriss, y_nrs1, y_nrs2 = forward_data(priortransform(np.random.rand(14)))
-    wls, model = retrieval_forward_model(test_theta, transmission_model, grid_points_number, chem_species)
-    print("Model wavelengths range:", wls.min(), wls.max())
-    print("Model transit depth range:", model.min(), model.max())
-    # plt.plot(wls_niriss, y_niriss, label='NIRISS')
-    # plt.plot(wls_nrs1, y_nrs1, label='NRS1')
-    # plt.plot(wls_nrs2, y_nrs2, label='NRS2')
-    plt.plot(wls, model, label='Model spectrum')
-    plt.xlabel("Wavelength ($\mu$m)")
-    plt.ylabel("Transit depth (ppm)")
-    plt.legend()
-    plt.savefig("/work2/lbuc/lukas/Projects/CC_JWST/figures/retrieval_test_spectrum.png", dpi=300)
-    plt.clf()
-
-
-    # # "Static" nested sampling.
-    # sampler = dynesty.NestedSampler(loglikelihood, priortransform, ndim, nlive=500)
-    # sampler.run_nested(dlogz=0.9, checkpoint_file='dynesty.save')
-    # sresults = sampler.results
-    # sresults.summary()
-    # equal_results = sresults.samples_equal()
-
-    # outfile = open('/work2/lbuc/lukas/Projects/CC_JWST/retrievals/results/test.save', 'ab')
-    # pickle.dump(sresults, outfile)
-    # outfile.close()
-    # new_outfile = open('/work2/lbuc/lukas/Projects/CC_JWST/retrievals/results/test_equal.save', 'ab')
-    # pickle.dump(equal_results, new_outfile)
-    # new_outfile.close()
-    # rfig, axes = dyplot.runplot(sresults)
+    # # wls, model = retrieval_forward_model(test_theta, transmission_model, grid_points_number, chem_species)
+    # # print("Model wavelengths range:", wls.min(), wls.max())
+    # # print("Model transit depth range:", model.min(), model.max())
+    # plt.plot(wls_niriss, y_niriss, label='NIRISS', marker='.', markersize=3, linestyle='None')
+    # plt.plot(wls_nrs1, y_nrs1, label='NRS1', marker='.', markersize=3, linestyle='None')
+    # plt.plot(wls_nrs2, y_nrs2, label='NRS2', marker='.', markersize=3, linestyle='None')
+    # # plt.plot(wls, model, label='Model spectrum')
+    # plt.xlabel("Wavelength ($\mu$m)")
+    # plt.ylabel("Transit depth (ppm)")
+    # plt.legend()
     # plt.savefig("/work2/lbuc/lukas/Projects/CC_JWST/figures/retrieval_test_spectrum.png", dpi=300)
+    # plt.clf()
+
+
+    # "Static" nested sampling.
+    sampler = dynesty.NestedSampler(loglikelihood, priortransform, ndim, nlive=500)
+    sampler.run_nested(dlogz=0.5, checkpoint_file='dynesty.save')
+
+    sresults = sampler.results
+    sresults.summary()
+    equal_results = sresults.samples_equal()
+
+    outfile = open('/work2/lbuc/lukas/Projects/CC_JWST/retrievals/results/test.save', 'ab')
+    pickle.dump(sresults, outfile)
+    outfile.close()
+    new_outfile = open('/work2/lbuc/lukas/Projects/CC_JWST/retrievals/results/test_equal.save', 'ab')
+    pickle.dump(equal_results, new_outfile)
+    new_outfile.close()
+    rfig, axes = dyplot.runplot(sresults)
+    plt.savefig("/work2/lbuc/lukas/Projects/CC_JWST/figures/retrieval_test.png", dpi=300)

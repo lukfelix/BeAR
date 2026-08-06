@@ -14,7 +14,8 @@ import pymultinest
 
 
 #setting the basic properties of the model
-retrieval_folder = "TransmissionExample/"
+# retrieval_folder = "TransmissionExample/"
+retrieval_folder = "/work2/lbuc/lukas/Projects/TOI-270d_JWST/retrievals/TOI-270_LRS"
 
 #load the retrieval configuration file
 model_config = bear.Config(retrieval_folder)

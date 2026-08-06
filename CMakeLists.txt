@@ -161,9 +161,7 @@ set(SRC
   src/temperature/guillot_temperature.cpp
   src/temperature/adiabate_cubic_spline.cpp
   src/temperature/madhusudhan_seager_temperature.cpp
-  src/temperature/twolayer_temperature.cpp
-  src/radiative_transfer/cdisort_src/cdisort.c
-  src/radiative_transfer/cdisort_src/locate.c)
+  src/temperature/twolayer_temperature.cpp)
   
 
 set(SRC_CUDA
